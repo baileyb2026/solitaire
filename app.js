@@ -124,7 +124,7 @@ function render(){
  const tab=$("tableau");tab.innerHTML="";
  for(let i=0;i<7;i++){const col=document.createElement("div");col.className="tcol";col.dataset.i=i;
    if(!state.tableau[i].length){let s=document.createElement("div");s.className="slot";col.appendChild(s)}
-   state.tableau[i].forEach((c,j)=>{const e=cardEl(c,selected?.type==="t"&&selected.i===i&&selected.idx===j);e.style.top=(j*(window.innerWidth<700?Math.min(72,window.innerWidth*.16):74))+"px";e.style.height=(window.innerWidth<700?Math.min(105,window.innerWidth*.20):105)+"px";e.onclick=(ev)=>{ev.stopPropagation();handleSelection("t",i,j)};col.appendChild(e)});
+   state.tableau[i].forEach((c,j)=>{const e=cardEl(c,selected?.type==="t"&&selected.i===i&&selected.idx===j);e.style.top=(j*(window.innerWidth<700?Math.min(38,window.innerWidth*.09):55))+"px";e.style.height=(window.innerWidth<700?Math.min(82,window.innerWidth*.21):105)+"px";e.onclick=(ev)=>{ev.stopPropagation();handleSelection("t",i,j)};col.appendChild(e)});
    tab.appendChild(col)
  }
  $("score").textContent=state.score;$("moves").textContent=state.moves;updateTime()
