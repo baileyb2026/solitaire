@@ -106,6 +106,75 @@ function hint(){
   flash("No obvious move — try drawing a card.")
 }
 function flash(t){$("message").textContent=t;$("message").style.display="block";setTimeout(()=>$("message").style.display="none",1800)}
+function doubleTapMove(type,i,idx){
+  let src=type==="t"?state.tableau[i]:(type==="w"?state.waste:state.found[i]);
+  if(!src.length)return;
+
+  const c=src[type==="t"?idx:src.length-1];
+  if(!c||!c.up)return;
+
+  // Try foundation first.
+  for(let f=0;f<4;f++){
+    if(canFoundation(c,state.found[f])){
+      snapshot();
+
+      if(type==="t"){
+        state.tableau[i].splice(idx,1);
+        flipIfNeeded(state.tableau[i]);
+      }else{
+        src.pop();
+      }
+
+      state.found[f].push(c);
+      state.moves++;
+      selected=null;
+      render();
+      checkWin();
+      return;
+    }
+  }
+
+  // Otherwise try another tableau pile.
+  for(let t=0;t<7;t++){
+    if(type==="t"&&t===i)continue;
+
+    const dest=state.tableau[t];
+
+    if(dest.length===0 && c.r==="K"){
+      snapshot();
+
+      if(type==="t"){
+        state.tableau[i].splice(idx,1);
+        flipIfNeeded(state.tableau[i]);
+      }else{
+        src.pop();
+      }
+
+      dest.push(c);
+      state.moves++;
+      selected=null;
+      render();
+      return;
+    }
+
+    if(dest.length && canStack(c,dest[dest.length-1])){
+      snapshot();
+
+      if(type==="t"){
+        state.tableau[i].splice(idx,1);
+        flipIfNeeded(state.tableau[i]);
+      }else{
+        src.pop();
+      }
+
+      dest.push(c);
+      state.moves++;
+      selected=null;
+      render();
+      return;
+    }
+  }
+}
 function checkWin(){if(state.found.every(f=>f.length===13)){state.won=true;flash("🎉 You won!");}}
 function cardEl(c,selectedNow=false){
  const d=document.createElement("div");d.className="card"+(RED.has(c.s)?" red":"")+(c.up?"":" back");if(selectedNow)d.style.outline="3px solid var(--accent)";
@@ -118,13 +187,14 @@ function render(){
  if(state.stock.length)stock.appendChild(cardEl({up:false}));else{let s=document.createElement("div");s.className="slot";stock.appendChild(s)}
  t.appendChild(stock);
  const waste=document.createElement("div");waste.className="pile";waste.onclick=()=>state.waste.length&&handleSelection("w",0,state.waste.length-1);
- if(state.waste.length)waste.appendChild(cardEl(state.waste.at(-1),selected?.type==="w"));else{let s=document.createElement("div");s.className="slot";waste.appendChild(s)}t.appendChild(waste);
+ if(state.waste.length){   const wc=cardEl(state.waste.at(-1),selected?.type==="w");   wc.ondblclick=(ev)=>{ev.stopPropagation();doubleTapMove("w",0,state.waste.length-1)};   waste.appendChild(wc); }else{let s=document.createElement("div");s.className="slot";waste.appendChild(s)}t.appendChild(waste);
  for(let i=0;i<5;i++){const p=document.createElement("div");p.className="pile";p.dataset.i=i+2;p.style.visibility=i<1?"hidden":"visible";t.appendChild(p)}
  for(let i=0;i<4;i++){const p=document.createElement("div");p.className="pile";p.onclick=()=>{if(selected&&tryMove(selected,"f",i,0)){selected=null;render();checkWin()}};let f=state.found[i];if(f.length)p.appendChild(cardEl(f.at(-1)));else{let s=document.createElement("div");s.className="slot";s.innerHTML=`<div style="text-align:center;padding-top:20%;opacity:.35;font-size:24px">${SUITS[i]}</div>`;p.appendChild(s)}t.appendChild(p)}
  const tab=$("tableau");tab.innerHTML="";
  for(let i=0;i<7;i++){const col=document.createElement("div");col.className="tcol";col.dataset.i=i;
+  col.onclick=()=>{if(selected)handleSelection("t",i,0)};
    if(!state.tableau[i].length){let s=document.createElement("div");s.className="slot";col.appendChild(s)}
-   state.tableau[i].forEach((c,j)=>{const e=cardEl(c,selected?.type==="t"&&selected.i===i&&selected.idx===j);e.style.top=(j*(window.innerWidth<700?Math.min(38,window.innerWidth*.09):55))+"px";e.style.height=(window.innerWidth<700?Math.min(82,window.innerWidth*.21):105)+"px";e.onclick=(ev)=>{ev.stopPropagation();handleSelection("t",i,j)};col.appendChild(e)});
+   sstate.tableau[i].forEach((c,j)=>{const e=cardEl(c,selected?.type==="t"&&selected.i===i&&selected.idx===j);e.ondblclick=(ev)=>{ev.stopPropagation();doubleTapMove("t",i,j)};e.style.top=(j*(window.innerWidth<700?Math.min(38,window.innerWidth*.09):55))+"px";e.style.height=(window.innerWidth<700?Math.min(82,window.innerWidth*.21):105)+"px";e.onclick=(ev)=>{ev.stopPropagation();handleSelection("t",i,j)};col.appendChild(e)});
    tab.appendChild(col)
  }
  $("score").textContent=state.score;$("moves").textContent=state.moves;updateTime()
