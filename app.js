@@ -72,8 +72,23 @@ function tryMove(sel,to,ti,idx){
   return false;
 }
 function stockTap(){
-  if(state.stock.length){snapshot();state.waste.push(state.stock.pop());state.moves++;render();return}
-  if(state.waste.length){snapshot();state.stock=state.waste.reverse();state.waste=[];state.redeals++;render()}
+  if(state.stock.length){
+    snapshot();
+    const c=state.stock.pop();
+    c.up=true;
+    state.waste.push(c);
+    state.moves++;
+    render();
+    return;
+  }
+  if(state.waste.length){
+    snapshot();
+    state.stock=state.waste.reverse();
+    state.stock.forEach(c=>c.up=false);
+    state.waste=[];
+    state.redeals++;
+    render();
+  }
 }
 function autoMove(){
   let moved=true;
