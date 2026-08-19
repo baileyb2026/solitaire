@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0b6b4f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Solitaire">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Solitaire</title>
+<style>
+:root{--felt:#0b6b4f;--felt2:#07563f;--card:#fff;--ink:#18201d;--muted:#68756f;--panel:#f6f8f7;--accent:#f0c75e;--shadow:0 5px 14px #0005}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--felt);color:#fff}
+button{font:inherit;border:0}
+#app{height:100%;display:flex;flex-direction:column;max-width:900px;margin:auto}
+header{height:calc(58px + env(safe-area-inset-top));padding:calc(10px + env(safe-area-inset-top)) 12px 8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.title{font-weight:800;font-size:20px}
+.topbtn{background:#ffffff1c;color:#fff;border-radius:12px;padding:9px 12px;font-weight:700}
+#stats{display:flex;gap:12px;font-size:12px;opacity:.92}
+#stats span b{font-size:14px}
+main{flex:1;overflow:auto;padding:4px 10px 18px}
+#top{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:10px}
+.pile{position:relative;min-width:0;aspect-ratio:0.72}
+.slot{position:absolute;inset:0;border:2px dashed #ffffff33;border-radius:9px}
+.card{position:absolute;inset:0;background:var(--card);color:var(--ink);border-radius:9px;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:space-between;padding:4px 5px;font-weight:800;user-select:none;touch-action:none}
+.card.red{color:#c52335}
+.card.back{background:linear-gradient(135deg,#1759a3,#0b3874);border:3px solid #fff;box-shadow:var(--shadow)}
+.card.back:after{content:"";position:absolute;inset:4px;border:2px solid #ffffff99;border-radius:5px}
+.rank{font-size:clamp(13px,3.7vw,24px);line-height:1}
+.suit{font-size:clamp(13px,4vw,25px);line-height:1}
+.center{font-size:clamp(22px,7vw,44px);align-self:center}
+#tableau{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.tcol{position:relative;min-width:0;min-height:55vh}
+.tcol .slot{height:clamp(75px,20vw,105px)}
+#bottombar{padding:8px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;background:#00000018;justify-content:center}
+.action{background:#fff;color:#123;border-radius:13px;padding:10px 13px;font-weight:800;box-shadow:0 2px 8px #0003}
+.action.primary{background:var(--accent)}
+#modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-end;z-index:20}
+#sheet{width:100%;max-width:600px;margin:auto;background:var(--panel);color:var(--ink);border-radius:22px 22px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow:auto}
+#sheet h2{margin:0 0 14px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #0001}
+.switch{appearance:none;width:48px;height:28px;border-radius:20px;background:#ccd4d0;position:relative}
+.switch:checked{background:#0b6b4f}
+.switch:after{content:"";position:absolute;width:22px;height:22px;top:3px;left:3px;border-radius:50%;background:#fff;transition:.15s}
+.switch:checked:after{left:23px}
+#message{position:fixed;left:50%;top:14%;transform:translateX(-50%);background:#111d;color:#fff;padding:12px 16px;border-radius:14px;display:none;z-index:30;font-weight:700}
+@media(min-width:700px){main{padding-left:20px;padding-right:20px}.tcol{min-height:520px}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div><div class="title">♠ Solitaire</div><div id="stats"><span>Score <b id="score">0</b></span><span>Moves <b id="moves">0</b></span><span>Time <b id="time">0:00</b></span></div></div>
+  <div><button class="topbtn" id="newBtn">New</button><button class="topbtn" id="settingsBtn">⚙︎</button></div>
+</header>
+<main>
+  <div id="top"></div>
+  <div id="tableau"></div>
+</main>
+<div id="bottombar">
+  <button class="action" id="undoBtn">↶ Undo</button>
+  <button class="action" id="hintBtn">💡 Hint</button>
+  <button class="action primary" id="autoBtn">Auto</button>
+</div>
+</div>
+<div id="modal"><div id="sheet">
+<h2>Settings</h2>
+<div class="row"><span>Hints</span><input class="switch" id="hintToggle" type="checkbox" checked></div>
+<div class="row"><span>Auto-move to foundations</span><input class="switch" id="autoToggle" type="checkbox" checked></div>
+<div class="row"><span>Sound</span><input class="switch" id="soundToggle" type="checkbox"></div>
+<div class="row"><span>Scoring</span><select id="scoreMode"><option value="standard">Standard</option><option value="none">Off</option><option value="vegas">Vegas</option></select></div>
+<div class="row"><span>Theme</span><select id="theme"><option value="green">Classic Green</option><option value="blue">Blue</option><option value="dark">Dark</option></select></div>
+<button class="action primary" id="closeSettings" style="width:100%;margin-top:18px">Done</button>
+</div></div>
+<div id="message"></div>
+<script src="app.js"></script>
+</body>
+</html>
