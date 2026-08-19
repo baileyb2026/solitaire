@@ -120,7 +120,7 @@ function render(){
  const waste=document.createElement("div");waste.className="pile";waste.onclick=()=>state.waste.length&&handleSelection("w",0,state.waste.length-1);
  if(state.waste.length)waste.appendChild(cardEl(state.waste.at(-1),selected?.type==="w"));else{let s=document.createElement("div");s.className="slot";waste.appendChild(s)}t.appendChild(waste);
  for(let i=0;i<5;i++){const p=document.createElement("div");p.className="pile";p.dataset.i=i+2;p.style.visibility=i<1?"hidden":"visible";t.appendChild(p)}
- for(let i=0;i<4;i++){const p=document.createElement("div");p.className="pile";p.onclick=()=>{};let f=state.found[i];if(f.length)p.appendChild(cardEl(f.at(-1)));else{let s=document.createElement("div");s.className="slot";s.innerHTML=`<div style="text-align:center;padding-top:20%;opacity:.35;font-size:24px">${SUITS[i]}</div>`;p.appendChild(s)}t.appendChild(p)}
+ for(let i=0;i<4;i++){const p=document.createElement("div");p.className="pile";p.onclick=()=>{if(selected&&tryMove(selected,"f",i,0)){selected=null;render();checkWin()}};let f=state.found[i];if(f.length)p.appendChild(cardEl(f.at(-1)));else{let s=document.createElement("div");s.className="slot";s.innerHTML=`<div style="text-align:center;padding-top:20%;opacity:.35;font-size:24px">${SUITS[i]}</div>`;p.appendChild(s)}t.appendChild(p)}
  const tab=$("tableau");tab.innerHTML="";
  for(let i=0;i<7;i++){const col=document.createElement("div");col.className="tcol";col.dataset.i=i;
    if(!state.tableau[i].length){let s=document.createElement("div");s.className="slot";col.appendChild(s)}
